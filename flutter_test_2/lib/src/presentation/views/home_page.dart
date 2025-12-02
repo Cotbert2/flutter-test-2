@@ -11,11 +11,57 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() =>
         Provider.of<PhotoViewModel>(context, listen: false).loadPhotos()
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _searchById() {
+    final searchText = _searchController.text.trim();
+    
+    if (searchText.isEmpty) {
+      _showSnackBar('Por favor ingresa un ID');
+      return;
+    }
+    
+    final id = int.tryParse(searchText);
+    if (id == null) {
+      _showSnackBar('El ID debe ser un número válido');
+      return;
+    }
+    
+    if (id < 0) {
+      _showSnackBar('El ID debe ser un número positivo');
+      return;
+    }
+    
+    final vm = Provider.of<PhotoViewModel>(context, listen: false);
+    vm.searchPhotoById(id).then((_) {
+      if (vm.errorMessage != null) {
+        _showSnackBar(vm.errorMessage!);
+      }
+    });
+  }
+  
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red[400],
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
@@ -88,56 +134,103 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: vm.canGoToPreviousPage && !vm.loading
-                        ? () => vm.goToPreviousPage()
-                        : null,
-                    icon: const Icon(Icons.arrow_back_ios, size: 18),
-                    label: const Text('Anterior',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    )
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
+                // Search section
+                Row(
                   children: [
-                    Text(
-                      'Página ${vm.currentPage}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Buscar por ID',
+                          hintText: 'Ingresa el ID de la imagen',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        onSubmitted: (_) => _searchById(),
                       ),
                     ),
-                    Text(
-                      '${vm.photos.length} fotos',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: vm.loading ? null : _searchById,
+                      child: const Icon(Icons.search),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Navigation buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: vm.canGoToPreviousPage && !vm.loading
+                            ? () => vm.goToPreviousPage()
+                            : null,
+                        icon: const Icon(Icons.arrow_back_ios, size: 18),
+                        label: const Text('Anterior',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        )
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      children: [
+                        Text(
+                          vm.isSearchMode ? 'Búsqueda por ID' : 'Página ${vm.currentPage}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${vm.photos.length} foto${vm.photos.length != 1 ? 's' : ''}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: !vm.loading
+                            ? () => vm.goToNextPage()
+                            : null,
+                        label: const Text('Siguiente',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        )
+                        ),
+                        icon: const Icon(Icons.arrow_forward_ios, size: 18),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: !vm.loading
-                        ? () => vm.goToNextPage()
-                        : null,
-                    label: const Text('Siguiente',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    )
+                // Clear search button when in search mode
+                if (vm.isSearchMode)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: TextButton.icon(
+                      onPressed: () {
+                        _searchController.clear();
+                        vm.clearSearch();
+                      },
+                      icon: const Icon(Icons.clear),
+                      label: const Text('Volver a la lista'),
                     ),
-                    icon: const Icon(Icons.arrow_forward_ios, size: 18),
                   ),
-                ),
               ],
             ),
           ),

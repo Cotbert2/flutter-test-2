@@ -12,6 +12,7 @@ class PhotoViewModel extends ChangeNotifier {
   bool loading = false;
   String? errorMessage;
   int currentPage = 1;
+  bool isSearchMode = false;
   static const int photosPerPage = 30;
 
   Future<void> loadPhotos() async {
@@ -30,24 +31,51 @@ class PhotoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> searchPhotoById(int id) async {
+    loading = true;
+    errorMessage = null;
+    isSearchMode = true;
+    notifyListeners();
+
+    try {
+      final photo = await getPhotos.getPhotoById(id);
+      photos = [photo];
+      errorMessage = null;
+    } catch (e) {
+      errorMessage = e.toString().replaceAll('Exception: ', '');
+      photos = [];
+    }
+
+    loading = false;
+    notifyListeners();
+  }
+
+  void clearSearch() {
+    isSearchMode = false;
+    currentPage = 1;
+    loadPhotos();
+  }
+
   Future<void> goToPreviousPage() async {
-    if (currentPage > 1) {
+    if (currentPage > 1 && !isSearchMode) {
       currentPage--;
       await loadPhotos();
     }
   }
 
   Future<void> goToNextPage() async {
-    currentPage++;
-    await loadPhotos();
+    if (!isSearchMode) {
+      currentPage++;
+      await loadPhotos();
+    }
   }
 
   void goToPage(int page) {
-    if (page > 0 && page != currentPage) {
+    if (page > 0 && page != currentPage && !isSearchMode) {
       currentPage = page;
       loadPhotos();
     }
   }
 
-  bool get canGoToPreviousPage => currentPage > 1;
+  bool get canGoToPreviousPage => currentPage > 1 && !isSearchMode;
 }

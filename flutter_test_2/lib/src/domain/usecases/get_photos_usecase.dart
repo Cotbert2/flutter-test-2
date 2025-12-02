@@ -9,4 +9,8 @@ class GetPhotosUseCase {
   Future<List<Photo>> call({int page = 1}) {
     return repository.getPhotos(limit: 30, page: page);
   }
+
+  Future<Photo> getPhotoById(int id) {
+    return repository.getPhotoById(id);
+  }
 }

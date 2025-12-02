@@ -9,4 +9,8 @@ class PhotoRepositoryImpl {
   Future<List<Photo>> getPhotos({int limit = 30, int page = 1}) async {
     return datasource.fetchPhotos(limit, page);
   }
+
+  Future<Photo> getPhotoById(int id) async {
+    return datasource.fetchPhotoById(id);
+  }
 }
