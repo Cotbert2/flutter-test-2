@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
 
     if (vm.loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: SizedBox.shrink(),
       );
     }
 
@@ -169,12 +169,7 @@ class _HomePageState extends State<HomePage> {
                               fit: BoxFit.cover,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
-                                return Container(
-                                  color: Colors.grey[200],
-                                  child: const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
+                                return const SizedBox.shrink();
                               },
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
