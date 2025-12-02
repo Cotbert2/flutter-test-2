@@ -6,7 +6,7 @@ class GetPhotosUseCase {
 
   GetPhotosUseCase(this.repository);
 
-  Future<List<Photo>> call() {
-    return repository.getPhotos(limit: 30, page: 1);
+  Future<List<Photo>> call({int page = 1}) {
+    return repository.getPhotos(limit: 30, page: page);
   }
 }
