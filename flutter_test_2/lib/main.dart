@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_test_2/src/presentation/views/themes/general_theme.dart';
 import 'package:provider/provider.dart';
 import 'src/data/datasources/picsum_photos_datasource.dart';
 import 'src/data/repositories/photo_repository_impl.dart';
@@ -31,10 +32,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         routes: AppRoutes.routes,
         initialRoute: "/",
-        theme: ThemeData(
-          colorSchemeSeed: Colors.blue,
-          useMaterial3: true,
-        ),
+        theme: GeneralTheme.generalThemeLight,
       ),
     );
   }
